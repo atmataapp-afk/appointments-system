@@ -24,7 +24,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>إضافة موعد جديد</title>
-    <!-- Bootstrap RTL & Fonts -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
@@ -32,7 +31,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         :root { --primary-gradient: linear-gradient(135deg, #0062cc 0%, #004085 100%); }
         body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
         
-        /* الهيدر العلوي المحسن */
         .top-nav { background: white; padding: 12px 20px; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .nav-link-custom { text-decoration: none; color: #666; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 5px; }
         
@@ -41,15 +39,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .card-header-custom { background: var(--primary-gradient); color: white; padding: 25px; text-align: center; border: none; }
         
         .form-label { font-weight: 600; color: #444; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-        .form-control { border-radius: 12px; padding: 12px 15px; border: 1.5px solid #eee; background-color: #f8f9fa; transition: 0.3s; font-size: 1rem; }
-        .form-control:focus { background-color: #fff; border-color: #0062cc; box-shadow: 0 0 0 0.25rem rgba(0,98,204,0.1); }
+        
+        /* التنسيق الجديد للحقول التلقائية التوسع */
+        .form-control { 
+            border-radius: 12px; 
+            padding: 12px 15px; 
+            border: 1.5px solid #eee; 
+            background-color: #f8f9fa; 
+            transition: border-color 0.3s; 
+            font-size: 1rem;
+            resize: none; /* إخفاء مقبض التصغير اليدوي */
+            overflow: hidden; /* إخفاء شريط التمرير */
+            min-height: 50px;
+        }
+        .form-control:focus { background-color: #fff; border-color: #0062cc; box-shadow: 0 0 0 0.25rem rgba(0,98,204,0.1); outline: none; }
         
         .btn-submit { background: var(--primary-gradient); border: none; border-radius: 15px; padding: 15px; font-weight: 700; font-size: 1.1rem; color: white; width: 100%; box-shadow: 0 5px 15px rgba(0,98,204,0.3); transition: 0.3s; }
         .btn-submit:active { transform: scale(0.98); }
 
         .secondary-actions { display: flex; gap: 10px; margin-top: 15px; }
         .btn-outline-custom { flex: 1; border: 1.5px solid #ddd; border-radius: 12px; padding: 10px; text-decoration: none; color: #555; text-align: center; font-size: 0.9rem; font-weight: 600; transition: 0.3s; }
-        .btn-outline-custom:hover { background: #f8f9fa; border-color: #bbb; }
     </style>
 </head>
 <body>
@@ -74,7 +83,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <form method="POST" id="appointmentForm">
                 <div class="mb-3">
                     <label class="form-label"><i class="fas fa-heading"></i> موضوع الموعد</label>
-                    <input type="text" name="subject" class="form-control" placeholder="مثال: مراجعة العقد الفني" required>
+                    <!-- تم تحويله إلى textarea ليدعم التمدد -->
+                    <textarea name="subject" class="form-control auto-expand" rows="1" placeholder="مثال: مراجعة العقد الفني" required></textarea>
                 </div>
 
                 <div class="mb-3">
@@ -84,7 +94,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 <div class="mb-4">
                     <label class="form-label"><i class="fas fa-align-left"></i> ملاحظات إضافية</label>
-                    <textarea name="notes" class="form-control" rows="4" placeholder="تفاصيل الاجتماع أو الموقع..."></textarea>
+                    <textarea name="notes" class="form-control auto-expand" rows="3" placeholder="تفاصيل الاجتماع أو الموقع..."></textarea>
                 </div>
 
                 <button type="submit" class="btn btn-submit mb-3">
@@ -106,6 +116,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // وظيفة التوسع التلقائي للحقول
+    document.querySelectorAll('.auto-expand').forEach(el => {
+        el.addEventListener('input', function() {
+            this.style.height = 'auto'; // إعادة ضبط الطول لحسابه من جديد
+            this.style.height = (this.scrollHeight) + 'px'; // تعيين الطول بناءً على المحتوى
+        });
+    });
+
+    // معالجة الضغط على زر الإرسال
     document.getElementById('appointmentForm').onsubmit = function() {
         let btn = this.querySelector('.btn-submit');
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري المعالجة...';
