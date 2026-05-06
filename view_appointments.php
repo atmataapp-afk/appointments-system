@@ -1,7 +1,7 @@
 <?php
 include 'db.php';
 
-// 1. معالجة الحذف
+// معالجة الحذف
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM appointments WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
@@ -9,7 +9,7 @@ if (isset($_GET['delete'])) {
     exit();
 }
 
-// 2. معالجة التحديث
+// معالجة التحديث
 if (isset($_POST['update'])) {
     $sql = "UPDATE appointments SET subject=?, notes=?, appointment_date=? WHERE id=?";
     $pdo->prepare($sql)->execute([
@@ -22,7 +22,6 @@ if (isset($_POST['update'])) {
     exit();
 }
 
-// 3. جلب البيانات
 $query = "SELECT * FROM appointments ORDER BY appointment_date ASC";
 $stmt = $pdo->query($query);
 $appointments = $stmt->fetchAll();
@@ -31,19 +30,19 @@ $appointments = $stmt->fetchAll();
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>سجل المواعيد</title>
+    <title>سجل المواعيد - قطاع الهندسة الصحية</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { background: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
-        .card-table { border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        .card-table { border-radius: 15px; border: none; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         .auto-grow { resize: none; overflow: hidden; min-height: 45px; }
     </style>
 </head>
 <body>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-dark"><i class="fas fa-calendar-alt text-primary me-2"></i> سجل المواعيد</h2>
+        <h2 class="fw-bold text-dark"><i class="fas fa-calendar-alt text-primary me-2"></i> سجل المواعيد العام</h2>
         <a href="index.php" class="btn btn-dark px-4 shadow-sm">الرئيسية <i class="fas fa-home ms-1"></i></a>
     </div>
 
@@ -92,9 +91,9 @@ $appointments = $stmt->fetchAll();
 <!-- مودال التعديل -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">تعديل الموعد</h5>
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-primary text-white text-end">
+                <h5 class="modal-title fw-bold w-100">تعديل الموعد</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST">
@@ -114,8 +113,8 @@ $appointments = $stmt->fetchAll();
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="submit" name="update" class="btn btn-primary">حفظ التغييرات</button>
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" name="update" class="btn btn-primary px-4 fw-bold">حفظ التغييرات</button>
                 </div>
             </form>
         </div>
