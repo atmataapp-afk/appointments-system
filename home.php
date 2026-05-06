@@ -20,7 +20,7 @@
 <body>
 <div class="container text-center">
     <div class="main-card">
-        <h2 class="mb-5 fw-bold text-dark">نظام المواعيد الذكي</h2>
+        <h2 class="mb-5 fw-bold text-dark">موقع نظام المواعيد</h2>
         <a href="index.php" class="btn-custom btn-register w-100">
             <i class="fas fa-plus-circle"></i> تسجيل موعد جديد
         </a>
