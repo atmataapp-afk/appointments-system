@@ -17,7 +17,7 @@
 <body>
     <div class="container">
         <div class="main-card">
-            <h2 class="text-center mb-5 fw-bold" style="color: #0056b3;">نظام المواعيد الذكي</h2>
+            <h2 class="text-center mb-5 fw-bold" style="color: #0056b3;">نظام المواعيد</h2>
             <div class="row g-4">
                 <div class="col-md-6">
                     <a href="add_appointment.php" class="menu-btn">
