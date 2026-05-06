@@ -69,7 +69,7 @@ $appointments = $stmt->fetchAll();
     <!-- الجزء المعدل الذي يحتوي على زر الهوم، العنوان، وزر النسخ الاحتياطي وزر الإضافة -->
     <div class="d-flex justify-content-between align-items-center mb-2">
         <a href="index.php" class="text-muted"><i class="fas fa-home fa-lg"></i></a>
-        <h6 class="fw-bold m-0">سجل المواعيد الذكي</h6>
+        <h6 class="fw-bold m-0">سجل المواعيد </h6>
         <div class="d-flex gap-2">
             <!-- زر سحب نسخة SQL -->
             <a href="backup_sql.php" class="btn btn-outline-dark btn-sm rounded-pill px-3" title="سحب نسخة احتياطية">
