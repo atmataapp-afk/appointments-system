@@ -1,17 +1,9 @@
 <?php
+include 'db.php';
 $msg = "";
-// إعدادات الاتصال
-$host = 'localhost';
-$db   = 'appointments_db';
-$user = 'root';
-$pass = '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     try {
-        $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        
-        // التأكد من أن أسماء الأعمدة تطابق قاعدة البيانات
         $sql = "INSERT INTO appointments (subject, notes, appointment_date) VALUES (?, ?, ?)";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$_POST['subject'], $_POST['notes'], $_POST['appointment_date']]);
@@ -32,9 +24,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <style>
         body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
         .form-card { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-top: 40px; }
-        textarea { resize: none; overflow: hidden; min-height: 45px; }
-        .btn-back { background-color: #212529; color: white; border-radius: 8px; padding: 8px 20px; text-decoration: none; display: inline-flex; align-items: center; border: none; }
-        .btn-back:hover { background-color: #323539; color: #fff; transform: translateY(-2px); }
+        textarea { resize: none; min-height: 45px; }
+        .btn-back { background-color: #212529; color: white; border-radius: 8px; padding: 8px 20px; text-decoration: none; display: inline-flex; align-items: center; }
     </style>
 </head>
 <body>
