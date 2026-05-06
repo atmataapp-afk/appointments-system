@@ -1,75 +1,38 @@
-<?php
-$host = "dpg-d7te07l0lvsc739523tg-a.ohio-postgres.render.com"; 
-$db   = "mail_archive_kh";
-$user = "mail_archive_kh_user";
-$pass = "vk7iwNURJs6JQMokMtaW4aSrkftAh3wd";
-
-$appointments = [];
-$error = "";
-
-try {
-    $dsn = "pgsql:host=$host;port=5432;dbname=$db;sslmode=require";
-    $pdo = new PDO($dsn, $user, $pass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-
-    // جلب المواعيد مرتبة من الأحدث إلى الأقدم
-    $stmt = $pdo->query("SELECT * FROM appointments ORDER BY appointment_date DESC");
-    $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    $error = "❌ فشل جلب البيانات: " . $e->getMessage();
-}
-?>
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>معاينة المواعيد</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <title>نظام إدارة المواعيد | الرئيسية</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: 'Tajawal', sans-serif; background-color: #f8f9fa; padding-top: 50px; }
-        .card { border-radius: 15px; border: none; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
-        .table thead { background-color: #0d6efd; color: white; }
+        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex; align-items: center; }
+        .main-card { background: white; border-radius: 20px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 800px; margin: auto; }
+        .menu-btn { padding: 30px; border-radius: 15px; border: 2px solid #eee; transition: 0.3s; text-decoration: none; color: #333; display: block; text-align: center; }
+        .menu-btn:hover { border-color: #0056b3; transform: translateY(-5px); background: #f8f9ff; }
+        .icon-circle { width: 70px; height: 70px; background: #0056b3; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 28px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="card p-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="text-primary fw-bold m-0">قائمة المواعيد</h2>
-                <a href="add_appointment.php" class="btn btn-success fw-bold">➕ إضافة موعد جديد</a>
-            </div>
-
-            <?php if ($error): ?>
-                <div class="alert alert-danger"><?php echo $error; ?></div>
-            <?php endif; ?>
-
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead>
-                        <tr>
-                            <th>الموضوع</th>
-                            <th>الملاحظات</th>
-                            <th>التاريخ والوقت</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($appointments as $row): ?>
-                        <tr>
-                            <td class="fw-bold"><?php echo htmlspecialchars($row['subject']); ?></td>
-                            <td><?php echo htmlspecialchars($row['notes']); ?></td>
-                            <td class="text-muted"><?php echo date('Y-m-d h:i A', strtotime($row['appointment_date'])); ?></td>
-                        </tr>
-                        <?php endforeach; ?>
-                        
-                        <?php if (empty($appointments) && !$error): ?>
-                        <tr>
-                            <td colspan="3" class="text-center py-4 text-muted">لا توجد مواعيد مسجلة حالياً.</td>
-                        </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+        <div class="main-card">
+            <h2 class="text-center mb-5 fw-bold" style="color: #0056b3;">نظام المواعيد الذكي</h2>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <a href="add_appointment.php" class="menu-btn">
+                        <div class="icon-circle"><i class="fas fa-plus"></i></div>
+                        <h4>تسجيل موعد</h4>
+                        <p class="text-muted small">إضافة موعد جديد إلى الجدول</p>
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <a href="view_appointments.php" class="menu-btn">
+                        <div class="icon-circle" style="background: #495057;"><i class="fas fa-calendar-check"></i></div>
+                        <h4>معاينة المواعيد</h4>
+                        <p class="text-muted small">عرض، بحث وتعديل المواعيد</p>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
