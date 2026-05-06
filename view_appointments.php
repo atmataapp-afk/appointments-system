@@ -26,7 +26,7 @@ $appointments = $stmt->fetchAll();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>سجل المواعيد </title>
+    <title>سجل المواعيد</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -34,18 +34,14 @@ $appointments = $stmt->fetchAll();
         body { background: var(--bg-gray); font-family: 'Segoe UI', Tahoma, sans-serif; padding-bottom: 30px; }
         
         .header-section { background: white; padding: 15px 20px; border-bottom: 1px solid #e0e0e0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        
-        /* البحث الذكي */
         .search-box { position: relative; margin: 10px 0; }
         .search-box input { border-radius: 12px; padding: 10px 35px 10px 15px; border: 1.5px solid #eee; background: #fdfdfd; width: 100%; outline: none; }
         .search-box i { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #aaa; }
 
-        /* الفلترة السريعة */
         .filter-tabs { display: flex; gap: 8px; overflow-x: auto; padding: 5px 0; scrollbar-width: none; }
         .filter-btn { white-space: nowrap; padding: 6px 18px; border-radius: 20px; border: none; background: #e9ecef; color: #555; font-size: 0.85rem; font-weight: 600; transition: 0.3s; }
         .filter-btn.active { background: var(--primary-blue); color: white; box-shadow: 0 4px 10px rgba(0,86,179,0.2); }
 
-        /* البطاقات */
         .appointment-card { background: white; border: none; border-radius: 16px; margin-bottom: 15px; border-right: 5px solid #ccc; transition: 0.3s; }
         .active-border { border-right-color: #28a745; }
         .expired-border { border-right-color: #6c757d; opacity: 0.85; }
@@ -61,17 +57,23 @@ $appointments = $stmt->fetchAll();
         .btn-delete { background: #fff5f5; color: #dc3545; }
 
         .hidden-item { display: none !important; }
+
+        /* تنسيق الحقول المتمددة تلقائياً */
+        .auto-expand { 
+            resize: none; 
+            overflow: hidden; 
+            min-height: 45px; 
+            transition: border-color 0.3s;
+        }
     </style>
 </head>
 <body>
 
 <div class="header-section text-center">
-    <!-- الجزء المعدل الذي يحتوي على زر الهوم، العنوان، وزر النسخ الاحتياطي وزر الإضافة -->
     <div class="d-flex justify-content-between align-items-center mb-2">
         <a href="index.php" class="text-muted"><i class="fas fa-home fa-lg"></i></a>
-        <h6 class="fw-bold m-0">سجل المواعيد </h6>
+        <h6 class="fw-bold m-0">سجل المواعيد</h6>
         <div class="d-flex gap-2">
-            <!-- زر سحب نسخة SQL -->
             <a href="backup_sql.php" class="btn btn-outline-dark btn-sm rounded-pill px-3" title="سحب نسخة احتياطية">
                 <i class="fas fa-database"></i>
             </a>
@@ -81,13 +83,11 @@ $appointments = $stmt->fetchAll();
         </div>
     </div>
 
-    <!-- محرك البحث -->
     <div class="search-box">
         <i class="fas fa-search"></i>
         <input type="text" id="smartSearch" placeholder="ابحث هنا..." onkeyup="applyFilters()">
     </div>
 
-    <!-- فلاتر الحالة -->
     <div class="filter-tabs">
         <button class="filter-btn active" onclick="setFilter('all', this)">الكل</button>
         <button class="filter-btn" onclick="setFilter('active', this)">القادمة</button>
@@ -126,25 +126,30 @@ $appointments = $stmt->fetchAll();
     </div>
 </div>
 
-<!-- مودال التعديل -->
+<!-- مودال التعديل المحسن بالحقول المتمددة -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered mx-3">
         <div class="modal-content border-0 shadow" style="border-radius: 20px;">
             <form method="POST">
                 <div class="modal-body p-4">
                     <input type="hidden" name="id" id="edit_id">
+                    
                     <div class="mb-3">
                         <label class="form-label small fw-bold">الموضوع</label>
-                        <input type="text" name="subject" id="edit_subject" class="form-control rounded-3" required>
+                        <!-- تحويله إلى textarea ليتمدد -->
+                        <textarea name="subject" id="edit_subject" class="form-control rounded-3 auto-expand" rows="1" required></textarea>
                     </div>
+                    
                     <div class="mb-3">
                         <label class="form-label small fw-bold">الملاحظات</label>
-                        <textarea name="notes" id="edit_notes" class="form-control rounded-3" rows="3"></textarea>
+                        <textarea name="notes" id="edit_notes" class="form-control rounded-3 auto-expand" rows="3"></textarea>
                     </div>
+                    
                     <div class="mb-3">
                         <label class="form-label small fw-bold">التاريخ</label>
                         <input type="datetime-local" name="appointment_date" id="edit_date" class="form-control rounded-3" required>
                     </div>
+                    
                     <button type="submit" name="update" class="btn btn-primary w-100 rounded-pill py-2 fw-bold mt-2">حفظ التعديلات</button>
                 </div>
             </form>
@@ -154,6 +159,17 @@ $appointments = $stmt->fetchAll();
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// وظيفة التمدد التلقائي
+function adjustHeight(el) {
+    el.style.height = 'auto';
+    el.style.height = (el.scrollHeight) + 'px';
+}
+
+// تفعيل التمدد عند الكتابة
+document.querySelectorAll('.auto-expand').forEach(el => {
+    el.addEventListener('input', () => adjustHeight(el));
+});
+
 let currentStatusFilter = 'all';
 
 function setFilter(status, btn) {
@@ -185,12 +201,28 @@ function applyFilters() {
 
 function openEditModal(data) {
     document.getElementById('edit_id').value = data.id;
-    document.getElementById('edit_subject').value = data.subject;
-    document.getElementById('edit_notes').value = data.notes;
+    
+    // تعبئة البيانات
+    const subjectField = document.getElementById('edit_subject');
+    const notesField = document.getElementById('edit_notes');
+    
+    subjectField.value = data.subject;
+    notesField.value = data.notes;
+    
     if(data.appointment_date) {
         document.getElementById('edit_date').value = data.appointment_date.replace(" ", "T").substring(0, 16);
     }
-    new bootstrap.Modal(document.getElementById('editModal')).show();
+
+    // فتح المودال أولاً ثم تعديل الارتفاع بناءً على النص المسترجع
+    const modalEl = document.getElementById('editModal');
+    const modal = new bootstrap.Modal(modalEl);
+    
+    modalEl.addEventListener('shown.bs.modal', function () {
+        adjustHeight(subjectField);
+        adjustHeight(notesField);
+    }, { once: true });
+
+    modal.show();
 }
 </script>
 </body>
