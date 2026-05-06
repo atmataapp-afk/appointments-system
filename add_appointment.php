@@ -1,6 +1,6 @@
 <?php
-// استخدام عنوان IP المباشر لتجاوز مشاكل الـ DNS والـ Socket المحلي
-$host = "75.2.70.151"; // IP سيرفر Render في منطقة Ohio لضمان الاتصال الخارجي
+// إعدادات الاتصال المباشرة لضمان تجاوز خطأ Socket المفقود
+$host = "dpg-d7te07l0lvsc739523tg-a.ohio-postgres.render.com"; 
 $db   = "mail_archive_kh";
 $user = "mail_archive_kh_user";
 $pass = "vk7iwNURJs6JQMokMtaW4aSrkftAh3wd";
@@ -10,26 +10,31 @@ $message = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     try {
-        // نص اتصال يجبر PHP على استخدام الشبكة بدلاً من ملفات الـ Socket
+        // نص الاتصال الصارم بإضافة host= لضمان الاتصال عبر الشبكة وليس محلياً
         $dsn = "pgsql:host=$host;port=$port;dbname=$db;sslmode=require";
         
-        $pdo = new PDO($dsn, $user, $pass, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_TIMEOUT => 10 // مهلة زمنية للاتصال
-        ]);
+        // إنشاء الاتصال مع ضبط وضع الخطأ ليكون استثناءً (Exception)
+        $pdo = new PDO($dsn, $user, $pass);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $subject = $_POST['subject'];
-        $notes = $_POST['notes'];
-        $date = $_POST['appointment_date'];
+        // استقبال البيانات من النموذج
+        $subject = $_POST['subject'] ?? '';
+        $notes = $_POST['notes'] ?? '';
+        $date = $_POST['appointment_date'] ?? '';
 
-        // التأكد من إدخال البيانات في جدول المواعيد
-        $sql = "INSERT INTO appointments (subject, notes, appointment_date) VALUES (?, ?, ?)";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([$subject, $notes, $date]);
+        if (!empty($subject) && !empty($date)) {
+            // تنفيذ جملة الإدخال في جدول appointments
+            $sql = "INSERT INTO appointments (subject, notes, appointment_date) VALUES (?, ?, ?)";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$subject, $notes, $date]);
 
-        $message = "<div class='alert alert-success'>✅ تم حفظ الموعد بنجاح!</div>";
+            $message = "<div class='alert alert-success'>✅ تم حفظ الموعد بنجاح في قاعدة البيانات!</div>";
+        } else {
+            $message = "<div class='alert alert-warning'>⚠️ يرجى ملء الحقول المطلوبة (الموضوع والتاريخ).</div>";
+        }
+
     } catch (PDOException $e) {
-        // عرض رسالة الخطأ بشكل تفصيلي إذا فشل الاتصال
+        // سيتم عرض الخطأ التقني بدقة هنا إذا فشل الاتصال أو الإدخال
         $message = "<div class='alert alert-danger'>❌ خطأ في الحفظ: " . $e->getMessage() . "</div>";
     }
 }
@@ -52,28 +57,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border-radius: 15px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
             border: none;
+            margin-top: 50px;
         }
         .btn-primary {
             background-color: #0d6efd;
             border: none;
             padding: 12px;
         }
-        .btn-primary:hover {
-            background-color: #0b5ed7;
-        }
     </style>
 </head>
-<body class="d-flex align-items-center min-vh-100">
+<body>
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="card p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2 class="text-primary fw-bold m-0 text-center">إضافة موعد جديد</h2>
+                        <h2 class="text-primary fw-bold m-0">إضافة موعد جديد</h2>
                         <a href="index.php" class="btn btn-dark btn-sm">🏠 الرئيسية</a>
                     </div>
 
-                    <!-- عرض الرسائل (نجاح أو خطأ) -->
+                    <!-- عرض التنبيهات -->
                     <?php echo $message; ?>
 
                     <form method="POST">
