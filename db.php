@@ -7,15 +7,15 @@ $pass = "vk7iwNURJs6JQMokMtaW4aSrkftAh3wd";
 $port = "5432";
 
 try {
-    // التعديل هنا: إضافة sslmode لضمان الأمان والاتصال عبر الشبكة
+    // تم إضافة sslmode=require لضمان قبول الاتصال من Render
     $dsn = "pgsql:host=$host;port=$port;dbname=$db;sslmode=require"; 
     
     $pdo = new PDO($dsn, $user, $pass, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_TIMEOUT => 5 // مهلة الاتصال
     ]);
 } catch (PDOException $e) {
-    // عرض رسالة خطأ واضحة في حال فشل الاتصال
     die("خطأ في الاتصال بالسيرفر: " . $e->getMessage());
 }
 ?>
