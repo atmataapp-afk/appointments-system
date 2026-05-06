@@ -1,5 +1,5 @@
 <?php
-// إعدادات الاتصال المباشرة لضمان تجاوز خطأ Socket المفقود
+// بيانات الاتصال المباشرة لضمان الوصول للسيرفر الخارجي
 $host = "dpg-d7te07l0lvsc739523tg-a.ohio-postgres.render.com"; 
 $db   = "mail_archive_kh";
 $user = "mail_archive_kh_user";
@@ -10,32 +10,22 @@ $message = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     try {
-        // نص الاتصال الصارم بإضافة host= لضمان الاتصال عبر الشبكة وليس محلياً
+        // نص اتصال يجبر النظام على استخدام الشبكة وتجاوز خطأ No such file or directory
         $dsn = "pgsql:host=$host;port=$port;dbname=$db;sslmode=require";
-        
-        // إنشاء الاتصال مع ضبط وضع الخطأ ليكون استثناءً (Exception)
-        $pdo = new PDO($dsn, $user, $pass);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $pdo = new PDO($dsn, $user, $pass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 
-        // استقبال البيانات من النموذج
-        $subject = $_POST['subject'] ?? '';
-        $notes = $_POST['notes'] ?? '';
-        $date = $_POST['appointment_date'] ?? '';
+        $subject = $_POST['subject'];
+        $notes = $_POST['notes'];
+        $date = $_POST['appointment_date'];
 
-        if (!empty($subject) && !empty($date)) {
-            // تنفيذ جملة الإدخال في جدول appointments
-            $sql = "INSERT INTO appointments (subject, notes, appointment_date) VALUES (?, ?, ?)";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([$subject, $notes, $date]);
+        // الإدخال في الجدول الذي أنشأته بنجاح
+        $sql = "INSERT INTO appointments (subject, notes, appointment_date) VALUES (?, ?, ?)";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$subject, $notes, $date]);
 
-            $message = "<div class='alert alert-success'>✅ تم حفظ الموعد بنجاح في قاعدة البيانات!</div>";
-        } else {
-            $message = "<div class='alert alert-warning'>⚠️ يرجى ملء الحقول المطلوبة (الموضوع والتاريخ).</div>";
-        }
-
+        $message = "<div class='alert alert-success shadow-sm'>✅ تم حفظ الموعد بنجاح!</div>";
     } catch (PDOException $e) {
-        // سيتم عرض الخطأ التقني بدقة هنا إذا فشل الاتصال أو الإدخال
-        $message = "<div class='alert alert-danger'>❌ خطأ في الحفظ: " . $e->getMessage() . "</div>";
+        $message = "<div class='alert alert-danger shadow-sm'>❌ خطأ في الحفظ: " . $e->getMessage() . "</div>";
     }
 }
 ?>
@@ -49,50 +39,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: 'Tajawal', sans-serif; 
-            background-color: #f0f2f5; 
-        }
-        .card { 
-            border-radius: 15px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
-            border: none;
-            margin-top: 50px;
-        }
-        .btn-primary {
-            background-color: #0d6efd;
-            border: none;
-            padding: 12px;
-        }
+        body { font-family: 'Tajawal', sans-serif; background-color: #f8f9fa; }
+        .card { border-radius: 15px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .btn-primary { padding: 12px; font-weight: bold; }
     </style>
 </head>
-<body>
+<body class="d-flex align-items-center min-vh-100">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="card p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2 class="text-primary fw-bold m-0">إضافة موعد جديد</h2>
-                        <a href="index.php" class="btn btn-dark btn-sm">🏠 الرئيسية</a>
+                        <h2 class="text-primary fw-bold m-0">إضافة موعد</h2>
+                        <a href="index.php" class="btn btn-outline-dark btn-sm">🏠 المواعيد</a>
                     </div>
 
-                    <!-- عرض التنبيهات -->
                     <?php echo $message; ?>
 
                     <form method="POST">
                         <div class="mb-3">
                             <label class="form-label fw-bold">موضوع الموعد</label>
-                            <input type="text" name="subject" class="form-control" placeholder="ما هو موضوع الموعد؟" required>
+                            <input type="text" name="subject" class="form-control form-control-lg" placeholder="مثال: اجتماع اللجنة" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">الملاحظات</label>
-                            <textarea name="notes" class="form-control" rows="3" placeholder="اكتب التفاصيل هنا..."></textarea>
+                            <textarea name="notes" class="form-control" rows="3" placeholder="تفاصيل إضافية..."></textarea>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">التاريخ والوقت</label>
-                            <input type="datetime-local" name="appointment_date" class="form-control" required>
+                            <input type="datetime-local" name="appointment_date" class="form-control form-control-lg" required>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100 fw-bold">💾 حفظ الموعد</button>
+                        <button type="submit" class="btn btn-primary w-100 shadow-sm">💾 حفظ الموعد الآن</button>
                     </form>
                 </div>
             </div>
