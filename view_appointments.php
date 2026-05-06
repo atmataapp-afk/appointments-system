@@ -31,8 +31,11 @@ $appointments = $stmt->fetchAll();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --primary-blue: #0056b3; --bg-gray: #f4f7f9; }
-        body { background: var(--bg-gray); font-family: 'Segoe UI', Tahoma, sans-serif; padding-bottom: 30px; }
+        body { background: var(--bg-gray); font-family: 'Segoe UI', Tahoma, sans-serif; padding-bottom: 30px; transition: opacity 0.3s; }
         
+        /* منع التفاعل مع الصفحة أثناء المعالجة */
+        .is-loading { pointer-events: none; opacity: 0.6; cursor: wait; }
+
         .header-section { background: white; padding: 15px 20px; border-bottom: 1px solid #e0e0e0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .search-box { position: relative; margin: 10px 0; }
         .search-box input { border-radius: 12px; padding: 10px 35px 10px 15px; border: 1.5px solid #eee; background: #fdfdfd; width: 100%; outline: none; }
@@ -59,12 +62,7 @@ $appointments = $stmt->fetchAll();
         .hidden-item { display: none !important; }
 
         /* تنسيق الحقول المتمددة تلقائياً */
-        .auto-expand { 
-            resize: none; 
-            overflow: hidden; 
-            min-height: 45px; 
-            transition: border-color 0.3s;
-        }
+        .auto-expand { resize: none; overflow: hidden; min-height: 45px; transition: border-color 0.3s; }
     </style>
 </head>
 <body>
@@ -115,7 +113,8 @@ $appointments = $stmt->fetchAll();
                         <button class="btn-action btn-edit" onclick='openEditModal(<?= json_encode($row) ?>)'>
                             <i class="fas fa-pen"></i> تعديل
                         </button>
-                        <a href="?delete=<?= $row['id'] ?>" class="btn-action btn-delete" onclick="return confirm('حذف الموعد؟')">
+                        <!-- زر الحذف المطور مع الحماية -->
+                        <a href="?delete=<?= $row['id'] ?>" class="btn-action btn-delete delete-link" onclick="return confirmDelete(event, this)">
                             <i class="fas fa-trash"></i> حذف
                         </a>
                     </div>
@@ -126,7 +125,7 @@ $appointments = $stmt->fetchAll();
     </div>
 </div>
 
-<!-- مودال التعديل المحسن بالحقول المتمددة -->
+<!-- مودال التعديل -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered mx-3">
         <div class="modal-content border-0 shadow" style="border-radius: 20px;">
@@ -136,7 +135,6 @@ $appointments = $stmt->fetchAll();
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold">الموضوع</label>
-                        <!-- تحويله إلى textarea ليتمدد -->
                         <textarea name="subject" id="edit_subject" class="form-control rounded-3 auto-expand" rows="1" required></textarea>
                     </div>
                     
@@ -159,17 +157,34 @@ $appointments = $stmt->fetchAll();
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// وظيفة التمدد التلقائي
+// 1. وظيفة التمدد التلقائي للحقول
 function adjustHeight(el) {
     el.style.height = 'auto';
     el.style.height = (el.scrollHeight) + 'px';
 }
 
-// تفعيل التمدد عند الكتابة
 document.querySelectorAll('.auto-expand').forEach(el => {
     el.addEventListener('input', () => adjustHeight(el));
 });
 
+// 2. حماية الحذف من النقر المزدوج
+function confirmDelete(event, element) {
+    if (!confirm('هل أنت متأكد من حذف هذا الموعد؟')) {
+        event.preventDefault();
+        return false;
+    }
+    // تفعيل وضع التحميل ومنع التفاعل
+    document.body.classList.add('is-loading');
+    element.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    
+    // تعطيل كافة روابط الحذف الأخرى
+    document.querySelectorAll('.delete-link').forEach(link => {
+        link.style.pointerEvents = 'none';
+    });
+    return true;
+}
+
+// 3. نظام الفلترة والبحث
 let currentStatusFilter = 'all';
 
 function setFilter(status, btn) {
@@ -199,10 +214,9 @@ function applyFilters() {
     }
 }
 
+// 4. فتح المودال مع تعديل الحجم
 function openEditModal(data) {
     document.getElementById('edit_id').value = data.id;
-    
-    // تعبئة البيانات
     const subjectField = document.getElementById('edit_subject');
     const notesField = document.getElementById('edit_notes');
     
@@ -213,7 +227,6 @@ function openEditModal(data) {
         document.getElementById('edit_date').value = data.appointment_date.replace(" ", "T").substring(0, 16);
     }
 
-    // فتح المودال أولاً ثم تعديل الارتفاع بناءً على النص المسترجع
     const modalEl = document.getElementById('editModal');
     const modal = new bootstrap.Modal(modalEl);
     
