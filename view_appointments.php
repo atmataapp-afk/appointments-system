@@ -16,7 +16,7 @@ if (isset($_POST['update'])) {
     exit();
 }
 
-// جلب البيانات (الفلترة ستتم برمجياً عبر JS لسرعة فائقة)
+// جلب البيانات
 $stmt = $pdo->query("SELECT * FROM appointments ORDER BY appointment_date ASC");
 $appointments = $stmt->fetchAll();
 ?>
@@ -66,10 +66,19 @@ $appointments = $stmt->fetchAll();
 <body>
 
 <div class="header-section text-center">
+    <!-- الجزء المعدل الذي يحتوي على زر الهوم، العنوان، وزر النسخ الاحتياطي وزر الإضافة -->
     <div class="d-flex justify-content-between align-items-center mb-2">
         <a href="index.php" class="text-muted"><i class="fas fa-home fa-lg"></i></a>
         <h6 class="fw-bold m-0">سجل المواعيد الذكي</h6>
-        <a href="add_appointment.php" class="btn btn-primary btn-sm rounded-pill px-3"><i class="fas fa-plus"></i></a>
+        <div class="d-flex gap-2">
+            <!-- زر سحب نسخة SQL -->
+            <a href="backup_sql.php" class="btn btn-outline-dark btn-sm rounded-pill px-3" title="سحب نسخة احتياطية">
+                <i class="fas fa-database"></i>
+            </a>
+            <a href="add_appointment.php" class="btn btn-primary btn-sm rounded-pill px-3">
+                <i class="fas fa-plus"></i>
+            </a>
+        </div>
     </div>
 
     <!-- محرك البحث -->
